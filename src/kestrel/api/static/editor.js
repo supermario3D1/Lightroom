@@ -428,12 +428,20 @@ function lightroomDialog(ed) {
          version_id: ed.current ? ed.current.id : null, mode: mode.value,
        }});
        const p = res.payload || {};
+       // packet.masks is the versioned mask document ({format, version, masks: [...]}),
+       // not a bare array — count the entries either way so the dialog never says "undefined".
+       const maskDoc = p.masks || {};
+       const maskList = Array.isArray(maskDoc) ? maskDoc : (maskDoc.masks || []);
+       const nativeMasks = maskList.filter((m) => (m.capability || "plugin") === "native").length;
+       const gradientSuffix = maskList.length
+         ? ` (${nativeMasks} native gradient${nativeMasks === 1 ? "" : "s"}, ${maskList.length - nativeMasks} rendered)`
+         : "";
        openModal("Packet ready", h("div", {},
          h("p", { class: "card-sub" }, `Written to ${p.packet_path}`),
          h("dl", { class: "kv", style: "margin-top:10px" },
            h("dt", {}, "Mode"), h("dd", {}, p.mode || mode.value),
            h("dt", {}, "Develop settings"), h("dd", {}, String(Object.keys(p.settings || {}).length)),
-           h("dt", {}, "Masks"), h("dd", {}, String((p.masks || []).length)),
+           h("dt", {}, "Local adjustments"), h("dd", {}, `${maskList.length}${gradientSuffix}`),
            h("dt", {}, "Explanation items"), h("dd", {}, String((p.explanation || []).length))),
          h("p", { class: "note", style: "margin-top:10px" },
            "In Lightroom: select the photo → Plug-in Extras → Kestrel → Apply latest edit.")),

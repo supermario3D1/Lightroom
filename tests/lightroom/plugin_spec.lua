@@ -249,12 +249,26 @@ local photoB = makePhoto(TEST_SAMPLE2, 'uuid-photo-b')
 selection = { photoA }
 
 -- ------------------------------------------------------------------ assertions
+-- Assertion messages must survive the trip into Python: a raw byte that is not
+-- valid UTF-8 would raise UnicodeDecodeError inside lupa and abort the whole
+-- run, hiding the other 35 cases. Everything outside printable ASCII becomes a
+-- '?', and byte-level expectations are reported as hex instead.
+local function ascii(text)
+    return (tostring(text):gsub('[^\32-\126]', '?'))
+end
+
+local function hex(text)
+    local out = {}
+    for index = 1, #text do out[index] = string.format('%02x', string.byte(text, index)) end
+    return table.concat(out)
+end
+
 local function test(name, fn)
     local ok, err = pcall(fn)
-    results.cases[#results.cases + 1] = { name = name, ok = ok, error = ok and nil or tostring(err) }
+    results.cases[#results.cases + 1] = { name = name, ok = ok, error = ok and nil or ascii(err) }
     if ok then results.passed = results.passed + 1 else results.failed = results.failed + 1 end
     -- The harness injects py_progress so a stalled run still shows where it got to.
-    if py_progress then py_progress(name, ok, ok and '' or tostring(err)) end
+    if py_progress then py_progress(name, ok, ok and '' or ascii(err)) end
 end
 
 local function assertTrue(value, message)
@@ -303,14 +317,18 @@ test('information file declares a real plug-in', function()
 end)
 
 test('json round-trips real payloads', function()
+    -- Built from bytes, not from the editor's encoding: the em dash (U+2014)
+    -- and e-acute (U+00E9) must survive as the same UTF-8 bytes on every
+    -- platform and every Lua build Lightroom and this harness run on.
+    local emDash = string.char(0xE2, 0x80, 0x94)
+    local eAcute = string.char(0xC3, 0xA9)
     local payload = {
-        name = 'Kestrel — café',
+        name = 'Kestrel ' .. emDash .. ' caf' .. eAcute,
         values = { 1, 2, 3.5, -0.25 },
         nested = { ok = true, missing = false, empty = {} },
     }
-    local encoded = Json.encode(payload)
-    local decoded = Json.decode(encoded)
-    assertEqual(decoded.name, payload.name, 'unicode string')
+    local decoded = Json.decode(Json.encode(payload))
+    assertEqual(hex(decoded.name), hex(payload.name), 'utf-8 text, byte for byte')
     assertEqual(decoded.values[4], -0.25, 'float preserved')
     assertEqual(decoded.nested.ok, true, 'boolean')
     assertEqual(Json.decode('{"a":null}').a, nil, 'null becomes nil')
@@ -596,7 +614,7 @@ test('diagnostics pass against a healthy engine', function()
     assertMatch(text, 'engine reachable', 'engine check')
     assertMatch(text, 'POST round%-trip', 'post check')
     assertMatch(text, 'preferences readable', 'prefs check')
-    assertTrue(not text:find('✗'), 'no cross marks')
+    assertTrue(not text:find(string.char(0xE2, 0x9C, 0x97)), 'no cross marks')
 end)
 
 test('settings dialog builds its views and keeps the address', function()
