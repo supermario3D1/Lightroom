@@ -73,25 +73,38 @@ class EngineProcess:
         return f"http://127.0.0.1:{self.port}"
 
     def start(self) -> None:
+        # The engine writes to a file rather than a pipe: a pipe that nobody
+        # drains blocks the child once the OS buffer fills (16 KiB on macOS,
+        # 64 KiB on Linux), which would look like a mysterious hang in CI.
+        self.log_path = self.home / "engine.log"
+        self._log = open(self.log_path, "wb")
         env = dict(os.environ, KESTREL_HOME=str(self.home))
         self.proc = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "kestrel.api.app:create_app",
              "--factory", "--host", "127.0.0.1", "--port", str(self.port),
              "--log-level", "warning"],
-            cwd=str(ROOT), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            cwd=str(ROOT), env=env, stdout=self._log, stderr=subprocess.STDOUT,
         )
-        deadline = time.time() + 90
+        deadline = time.time() + 120
         while time.time() < deadline:
             if self.proc.poll() is not None:
-                out = self.proc.stdout.read().decode() if self.proc.stdout else ""
-                raise RuntimeError(f"engine died during startup:\n{out}")
+                raise RuntimeError(f"engine died during startup:\n{self.tail()}")
             try:
                 with urllib.request.urlopen(self.base_url + "/api/health", timeout=2) as r:
                     if r.status == 200:
                         return
             except Exception:
                 time.sleep(0.3)
-        raise RuntimeError("engine did not become healthy in time")
+        raise RuntimeError(
+            f"engine did not become healthy in {120} s (exit {self.proc.poll()}):\n{self.tail()}")
+
+    def tail(self, lines: int = 60) -> str:
+        """Last lines of the engine log — included in every startup failure."""
+        try:
+            text = self.log_path.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            return "(engine log unavailable)"
+        return "\n".join(text.splitlines()[-lines:])
 
     def stop(self) -> None:
         if self.proc and self.proc.poll() is None:
@@ -100,12 +113,19 @@ class EngineProcess:
                 self.proc.wait(timeout=15)
             except subprocess.TimeoutExpired:
                 self.proc.kill()
-        if PLUGIN_DIR.exists():
-            shutil.rmtree(self.home, ignore_errors=True)
+        if getattr(self, "_log", None) is not None:
+            self._log.close()
+            self._log = None
+        shutil.rmtree(self.home, ignore_errors=True)
 
 
 # ------------------------------------------------------------------- lua runner
-def run_spec(base_url: str, keep_home: bool = False) -> dict:
+def run_spec(base_url: str, on_case=None) -> dict:
+    """Execute plugin_spec.lua against the plug-in files, case by case.
+
+    ``on_case(name, ok, error)`` is called after every case, so a long run
+    reports progress instead of going silent until the end.
+    """
     from lupa import LuaRuntime  # imported lazily for a clear error message
 
     lua = LuaRuntime(unpack_returned_tuples=True)
@@ -122,6 +142,7 @@ def run_spec(base_url: str, keep_home: bool = False) -> dict:
     g.TEST_SAMPLE2 = str(second)
     g.py_http = _http
     g.py_sleep = time.sleep
+    g.py_progress = on_case or (lambda name, ok, error: None)
 
     with open(SPEC_PATH, "r", encoding="utf-8") as fh:
         source = fh.read()
@@ -168,8 +189,14 @@ def main(argv: list[str] | None = None) -> int:
         engine.start()
         base_url = engine.base_url
 
+    def on_case(name: str, ok: bool, error: str) -> None:
+        if args.json:
+            return
+        mark = "PASS" if ok else "FAIL"
+        print(f"{mark}  {name}" + ("" if ok else f"\n      {error}"), flush=True)
+
     try:
-        result = run_spec(base_url)
+        result = run_spec(base_url, on_case=on_case)
     finally:
         if engine:
             engine.stop()
@@ -177,11 +204,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(result, indent=2, default=str))
     else:
-        for case in result.get("cases", []):
-            mark = "PASS" if case.get("ok") else "FAIL"
-            print(f"{mark}  {case.get('name')}")
-            if not case.get("ok"):
-                print(f"      {case.get('error')}")
+        failing = [case for case in result.get("cases", []) if not case.get("ok")]
+        for case in failing:
+            print(f"FAIL  {case.get('name')}\n      {case.get('error')}")
         print(f"\n{result.get('passed', 0)} passed, {result.get('failed', 0)} failed")
     return 0 if result.get("failed", 1) == 0 else 1
 

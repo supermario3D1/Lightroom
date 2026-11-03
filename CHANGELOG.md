@@ -3,6 +3,26 @@
 All notable changes to Kestrel are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+Reliability work found by running the first CI pass on three operating systems.
+
+### Fixed
+
+- Brand pipeline no longer depends on a hard-coded `/usr/share/fonts` path. The wordmark face is resolved across
+  Linux, macOS and Windows, `KESTREL_BRAND_FONT_BOLD` / `KESTREL_BRAND_FONT_REGULAR` override it, and
+  `python scripts/brand.py --check` verifies the generated vectors, the file manifest and every bitmap's pixel
+  dimensions. PNG bytes depend on the Pillow/FreeType/zlib build, so the old byte-for-byte diff could never be a
+  portable gate — a fact the new check documents rather than hides.
+- Two unreferenced, stale bitmaps (`kestrel-mark-transparent.png`, `kestrel-icon-1024.png`) removed from
+  `assets/brand/`; the check now fails on any file that is not in the generator's manifest.
+- CI: the Lua syntax check runs under bash on Windows (the job's default PowerShell cannot execute it), and the
+  plug-in and packaging jobs publish the tail of a failing command as a check-run annotation through
+  `scripts/ci_run.py`, so a red X comes with its reason attached.
+- Plug-in harness: engine output goes to a log file instead of a pipe (a pipe nobody drains blocks the child once
+  the OS buffer fills — 16 KiB on macOS), each case is printed as it finishes, a run that cannot start reports the
+  engine's log tail, and `run_spec(..., on_case=...)` streams progress.
+
 ## [1.0.0] — 2026-11-02
 
 First release. Sports-first, explanation-first, local-only photo finishing for Adobe Lightroom Classic.

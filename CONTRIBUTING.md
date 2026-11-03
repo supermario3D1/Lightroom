@@ -65,7 +65,12 @@ These are not style preferences; they are the reasons the product can be trusted
 | Lightroom develop keys | `src/kestrel/lightroom/native.py` + `KestrelApply.lua` ranges |
 | a workspace view | `web/views.js` (or `web/editor.js`), then `python scripts/sync_web.py` |
 | plug-in behaviour | `lightroom/Kestrel.lrplugin/` — and add a case to `tests/lightroom/plugin_spec.lua` |
-| brand assets | `scripts/brand.py` — never hand-edit the generated files |
+| brand assets | `scripts/brand.py` — never hand-edit the generated files; `python scripts/brand.py --check` verifies they are current |
+
+Brand bitmaps are rendered with DejaVu Sans when it is installed (Linux, or `brew install --cask font-dejavu` on
+macOS). Point `KESTREL_BRAND_FONT_BOLD` / `KESTREL_BRAND_FONT_REGULAR` at any other face to change the wordmark;
+`python scripts/brand.py --check` then verifies the committed vectors, manifest and dimensions, while a plain
+`python scripts/brand.py` plus `git diff` is how artwork changes are reviewed.
 
 After changing anything in `web/` or `assets/brand/`, run `python scripts/sync_web.py` so the packaged copy
 matches. `tests/test_packaging.py` fails if it does not.

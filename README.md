@@ -10,7 +10,7 @@
 [![Release](https://img.shields.io/badge/release-1.0.0-e0a458?style=flat-square)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776ab?style=flat-square&logo=python&logoColor=white)](pyproject.toml)
 [![Lightroom Classic](https://img.shields.io/badge/Lightroom%20Classic-6.0%2B-31a8ff?style=flat-square)](lightroom/Kestrel.lrplugin)
-[![Tests](https://img.shields.io/badge/tests-130%20unit%20%C2%B7%2036%20plug--in-75c48d?style=flat-square)](tests)
+[![Tests](https://img.shields.io/badge/tests-131%20unit%20%C2%B7%2036%20plug--in-75c48d?style=flat-square)](tests)
 [![Platforms](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-9aa8be?style=flat-square)](#requirements)
 [![Local only](https://img.shields.io/badge/processing-100%25%20local-e0a458?style=flat-square)](#privacy)
 
@@ -776,7 +776,7 @@ implemented, the interface does not offer it.
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-pytest                                   # 130 unit tests
+pytest                                   # 131 unit tests
 python -m tests.lightroom.lua_harness    # 36 plug-in tests against a live engine
 python scripts/brand.py                  # regenerate brand assets
 python scripts/sync_web.py               # copy the web UI into the package

@@ -9,7 +9,7 @@ Three suites, each answering a different question.
 | Workspace boot test | does the bundled UI run against the bundled API? | `node tests/web/boot.js` |
 | Evaluation harness | is the result actually good? | `kestrel eval <collection>` |
 
-## Engine unit tests (130)
+## Engine unit tests (131)
 
 | Area | What is asserted |
 |---|---|

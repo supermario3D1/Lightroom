@@ -10,6 +10,8 @@ These tests fail loudly instead, and they are cheap enough to run on every commi
 from __future__ import annotations
 
 import filecmp
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +54,21 @@ def test_packaged_brand_matches_source():
         source, copy = BRAND / name, STATIC / "brand" / name
         assert copy.is_file(), f"packaged brand missing: {name}"
         assert filecmp.cmp(source, copy, shallow=False), f"packaged brand stale: {name}"
+
+
+def test_brand_sources_match_committed_assets():
+    """`python scripts/brand.py --check` must pass on a clean tree.
+
+    The check compares the generated SVG sources, the file manifest and the
+    pixel dimensions of every bitmap — the parts that are identical on every
+    machine. PNG bytes are not compared: they depend on the Pillow/FreeType/zlib
+    build, which is why the old byte-for-byte CI gate could never be portable.
+    """
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "brand.py"), "--check"],
+        cwd=ROOT, capture_output=True, text=True, timeout=300,
+    )
+    assert result.returncode == 0, (result.stderr or result.stdout).strip()
 
 
 def test_index_references_only_shipped_scripts():

@@ -253,6 +253,8 @@ local function test(name, fn)
     local ok, err = pcall(fn)
     results.cases[#results.cases + 1] = { name = name, ok = ok, error = ok and nil or tostring(err) }
     if ok then results.passed = results.passed + 1 else results.failed = results.failed + 1 end
+    -- The harness injects py_progress so a stalled run still shows where it got to.
+    if py_progress then py_progress(name, ok, ok and '' or tostring(err)) end
 end
 
 local function assertTrue(value, message)

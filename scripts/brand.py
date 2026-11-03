@@ -20,7 +20,11 @@ Usage
 """
 from __future__ import annotations
 
+import argparse
 import math
+import os
+import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +47,54 @@ SLATE = (154, 168, 190)
 
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+
+def _font_candidates(bold: bool) -> list[Path]:
+    """Where the wordmark's typeface may live, in order of preference.
+
+    ``KESTREL_BRAND_FONT_BOLD`` / ``KESTREL_BRAND_FONT_REGULAR`` override
+    everything, which is how a designer drops in a licensed face. After that we
+    look for DejaVu (the face the shipped assets were drawn with) on Linux,
+    macOS and Windows, and finally fall back to a system sans.
+    """
+    name = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
+    candidates: list[Path] = []
+    override = os.environ.get("KESTREL_BRAND_FONT_BOLD" if bold else
+                              "KESTREL_BRAND_FONT_REGULAR")
+    if override:
+        candidates.append(Path(override).expanduser())
+    candidates += [
+        ROOT / "assets" / "fonts" / name,
+        Path("/usr/share/fonts/truetype/dejavu") / name,
+        Path("/usr/share/fonts/dejavu") / name,
+        Path("/usr/local/share/fonts") / name,
+        Path.home() / ".fonts" / name,
+        Path.home() / "Library" / "Fonts" / name,
+        Path("/Library/Fonts") / name,
+        Path("/System/Library/Fonts/Supplemental") / ("Arial Bold.ttf" if bold else "Arial.ttf"),
+        Path("C:/Windows/Fonts") / ("arialbd.ttf" if bold else "arial.ttf"),
+    ]
+    return candidates
+
+
+def _font(size: int, bold: bool = True) -> ImageFont.ImageFont:
+    """Load the wordmark face at ``size`` px, cross-platform."""
+    for candidate in _font_candidates(bold):
+        try:
+            if candidate.exists():
+                return ImageFont.truetype(str(candidate), size)
+        except OSError:  # unreadable font file — try the next candidate
+            continue
+    warnings.warn(
+        "DejaVu Sans not found; set KESTREL_BRAND_FONT_BOLD / "
+        "KESTREL_BRAND_FONT_REGULAR before regenerating brand assets. "
+        "Falling back to Pillow's default face.",
+        stacklevel=2,
+    )
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:  # Pillow < 10.1 has no sized default
+        return ImageFont.load_default()
 
 # The K: geometric, wide-armed, built on a 512 grid.
 K_POINTS = [
@@ -174,8 +226,8 @@ def lockup(width: int = 1600, background: str = "dark",
     canvas.paste(mark, (int(height * 0.20), int((height - mark_px) / 2)), mark)
 
     draw = ImageDraw.Draw(canvas)
-    title_font = ImageFont.truetype(FONT_BOLD, int(height * 0.30))
-    tag_font = ImageFont.truetype(FONT_REGULAR, max(12, int(height * 0.082)))
+    title_font = _font(int(height * 0.30))
+    tag_font = _font(max(12, int(height * 0.082)), bold=False)
 
     text_x = height * 0.20 + mark_px + height * 0.18
     title_y = height * 0.26
@@ -210,9 +262,9 @@ def social_card(width: int = 1280, height: int = 640) -> Image.Image:
     mark = render_mark(mark_px)
     canvas.paste(mark, (96, 96), mark)
 
-    title_font = ImageFont.truetype(FONT_BOLD, 82)
-    sub_font = ImageFont.truetype(FONT_REGULAR, 27)
-    eyebrow_font = ImageFont.truetype(FONT_BOLD, 20)
+    title_font = _font(82)
+    sub_font = _font(27, bold=False)
+    eyebrow_font = _font(20)
 
     text_x = 96
     _tracked_text(draw, "KESTREL", title_font, (text_x, 388), tracking=3, fill=PAPER)
@@ -222,7 +274,7 @@ def social_card(width: int = 1280, height: int = 640) -> Image.Image:
     _tracked_text(draw, "Sports-first. Explainable. Local.", sub_font,
                   (text_x, 556), tracking=0.6, fill=SLATE)
 
-    badge = ImageFont.truetype(FONT_BOLD, 18)
+    badge = _font(18)
     label = "LIGHTROOM CLASSIC"
     width_label = badge.getlength(label)
     box = [width - 96 - width_label - 48, 96, width - 96, 96 + 44]
@@ -300,8 +352,40 @@ def logo_svg() -> str:
 """
 
 
+# ------------------------------------------------------------------- manifests
+# Exactly what `python scripts/brand.py` writes. The manifest is the contract
+# used by --check, so a renamed or forgotten asset fails instead of drifting.
+ASSET_FILES: dict[str, tuple[int, int] | None] = {
+    "kestrel-mark.png": (1024, 1024),
+    "kestrel-icon-32.png": (32, 32),
+    "kestrel-icon-64.png": (64, 64),
+    "kestrel-icon-128.png": (128, 128),
+    "kestrel-icon-256.png": (256, 256),
+    "kestrel-icon-512.png": (512, 512),
+    "kestrel-logo-dark.png": (1600, 480),
+    "kestrel-logo-light.png": (1600, 480),
+    "social-preview.png": (1280, 640),
+    "kestrel-mark.svg": None,
+    "kestrel-logo.svg": None,
+}
+
+WEB_FILES: dict[str, tuple[int, int] | None] = {
+    "brand-mark.svg": None,
+    "brand-mark.png": (512, 512),
+    "favicon.svg": None,
+    "social-preview.png": (1200, 600),
+}
+
 # --------------------------------------------------------------------------- main
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--check", action="store_true",
+                        help="verify the committed assets are current without rasterising")
+    args = parser.parse_args(argv)
+    if args.check:
+        return verify()
+
     BRAND.mkdir(parents=True, exist_ok=True)
     WEB.mkdir(parents=True, exist_ok=True)
 
@@ -324,10 +408,75 @@ def main() -> int:
     social_card(1200, 600).save(WEB / "social-preview.png")
 
     print("brand assets written:")
-    for path in sorted(BRAND.iterdir()):
-        print(f"  assets/brand/{path.name}  ({path.stat().st_size / 1024:.0f} KB)")
-    for name in ("brand-mark.svg", "brand-mark.png", "favicon.svg", "social-preview.png"):
+    for name in ASSET_FILES:
+        path = BRAND / name
+        print(f"  assets/brand/{name}  ({path.stat().st_size / 1024:.0f} KB)")
+    for name in WEB_FILES:
         print(f"  web/{name}")
+    return 0
+
+
+def verify() -> int:
+    """Fail if the committed assets no longer match the source geometry.
+
+    Rasterised pixels are deliberately *not* compared: PNG bytes depend on the
+    Pillow/Pillow-SIMD/zlib/FreeType build and on which DejaVu revision the
+    machine has, so a byte diff can never be a portable CI gate. What is
+    checked here is everything that is environment independent — the vector
+    sources (which are generated from the same coordinates as the bitmaps),
+    the manifest of expected files and their pixel dimensions, and the copies
+    the web app serves. Regenerating locally and reviewing `git diff` for the
+    PNGs stays the documented workflow for art changes.
+    """
+    problems: list[str] = []
+
+    for root, names in ((BRAND, ASSET_FILES), (WEB, WEB_FILES)):
+        for name, size in names.items():
+            path = root / name
+            if not path.exists():
+                problems.append(f"missing {path.relative_to(ROOT)} (run python scripts/brand.py)")
+                continue
+            if size is None:
+                continue
+            try:
+                with Image.open(path) as image:
+                    if image.size != size:
+                        problems.append(
+                            f"{path.relative_to(ROOT)} is {image.size[0]}×{image.size[1]}, "
+                            f"expected {size[0]}×{size[1]}")
+            except OSError as exc:
+                problems.append(f"{path.relative_to(ROOT)} is not a readable image: {exc}")
+
+    expected_vectors = {
+        BRAND / "kestrel-mark.svg": mark_svg(),
+        BRAND / "kestrel-logo.svg": logo_svg(),
+        WEB / "brand-mark.svg": mark_svg(),
+        WEB / "favicon.svg": favicon_svg(),
+    }
+    for path, expected in expected_vectors.items():
+        if not path.exists():
+            continue  # already reported above
+        actual = path.read_text(encoding="utf-8")
+        if actual != expected:
+            problems.append(f"{path.relative_to(ROOT)} is stale — regenerate with python scripts/brand.py")
+
+    for directory, names in ((BRAND, ASSET_FILES), (WEB, WEB_FILES)):
+        for path in sorted(directory.iterdir()):
+            if not path.is_file() or path.name in names:
+                continue
+            generated_looking = (directory is BRAND or path.name.startswith(("brand-", "favicon", "social-preview")))
+            if generated_looking:
+                problems.append(
+                    f"unexpected file {path.relative_to(ROOT)} — delete it or add it to the manifest")
+
+    if problems:
+        print("brand assets are not current:", file=sys.stderr)
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+
+    total = len(ASSET_FILES) + len(WEB_FILES)
+    print(f"brand assets are current ({total} files, geometry and dimensions verified)")
     return 0
 
 
