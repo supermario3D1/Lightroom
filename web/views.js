@@ -2,13 +2,24 @@
  * Part of the bundled single-page application; see app.js for the shell. */
 
 /* --------------------------------------------------------------- dashboard */
+/** Resolve to {data, error} so a failed request is reported, not hidden. */
+async function settle(promise, fallback) {
+  try {
+    return { data: await promise, error: null };
+  } catch (error) {
+    return { data: fallback, error };
+  }
+}
+
 async function viewDashboard() {
-  const [stats, rawJobs, recent, health] = await Promise.all([
-    api("/api/stats").catch(() => null),
-    api("/api/jobs").catch(() => null),
-    api("/api/images?limit=8").catch(() => ({ images: [] })),
-    api("/api/health").catch(() => null),
+  const [statsR, jobsR, recentR, healthR] = await Promise.all([
+    settle(api("/api/stats"), null),
+    settle(api("/api/jobs"), null),
+    settle(api("/api/images?limit=8"), { images: [] }),
+    settle(api("/api/health"), null),
   ]);
+  const stats = statsR.data, rawJobs = jobsR.data, recent = recentR.data, health = healthR.data;
+  const problems = [statsR, jobsR, recentR, healthR].filter((result) => result.error);
   if (health) state.health = health;
   state.stats = stats;
   state.jobs = rawJobs;
@@ -55,7 +66,18 @@ async function viewDashboard() {
     h("span", { class: `badge ${String(v).startsWith("native") ? "badge-ok" : String(v).startsWith("not") ? "badge-bad" : "badge-warn"}` }, String(v)),
     h("span", { class: "queue-meta" }, "")));
 
+  const problemBanner = problems.length
+    ? h("div", { class: "card", style: "margin-bottom:14px" },
+        h("h2", {}, "Some dashboard data could not be loaded"),
+        h("p", { class: "card-sub" },
+          `${problems.length} of 4 requests failed — the cards below show what did arrive. ` +
+          "The engine may still be starting; the reason for each failure is listed."),
+        ...problems.map((result) => h("p", { class: "note warn-note" },
+          String((result.error && result.error.message) || result.error))))
+    : null;
+
   return h("div", {},
+    problemBanner,
     h("div", { class: "dash-grid" },
       ...cards.map(([label, value, note]) => h("div", { class: "card" },
         h("div", { class: "stat" },
