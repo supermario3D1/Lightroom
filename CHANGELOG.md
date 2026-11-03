@@ -23,6 +23,28 @@ Reliability work found by running the first CI pass on three operating systems.
   the OS buffer fills — 16 KiB on macOS), each case is printed as it finishes, a run that cannot start reports the
   engine's log tail, and `run_spec(..., on_case=...)` streams progress.
 
+### Changed
+
+- Mask delivery is described the way it actually works. The documented Lightroom SDK has no call that creates a local
+  adjustment mask, so every mask in a plan now reports `capability: render` (with `expressible: gradient|ai` for a
+  future XMP path) and the capability report says so in plain words. The workspace, the packet dialog and
+  `docs/LIGHTROOM_SDK.md` no longer imply that gradients arrive as native Lightroom masks.
+- `adaptive` and `native` delivery modes are now genuinely different: `native` sends global develop settings with an
+  empty mask document, `adaptive` ships the mask plan for review and re-rendering.
+- Plug-in JSON: the encoder escaped text with Lua's `%c` class, which is locale-dependent and on macOS also matches
+  the C1 range 0x80-0x9F — the continuation bytes of UTF-8. An em dash in a collection name, a photographer's name or
+  a note was silently corrupted on its way to the engine. Escaping is now byte-explicit (C0 controls, quote,
+  backslash), which is both correct on every Lua build and cheaper to reason about; the plug-in specification
+  asserts UTF-8 and control characters byte for byte.
+- Develop settings are clamped to Lightroom's documented ranges inside the engine (`LIMITS` in
+  `lightroom/native.py`) as well as in the plug-in, so one corrupt or hand-edited plan cannot make Lightroom reject a
+  whole batch's settings table.
+
+### Added
+
+- `tests/test_lightroom_native.py`: the delivery contract (documented keys, clamped ranges, render-only masks,
+  mode differences) is now covered — 137 unit tests.
+
 ## [1.0.0] — 2026-11-02
 
 First release. Sports-first, explanation-first, local-only photo finishing for Adobe Lightroom Classic.

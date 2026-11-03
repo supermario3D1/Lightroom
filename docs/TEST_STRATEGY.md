@@ -9,7 +9,7 @@ Three suites, each answering a different question.
 | Workspace boot test | does the bundled UI run against the bundled API? | `node tests/web/boot.js` |
 | Evaluation harness | is the result actually good? | `kestrel eval <collection>` |
 
-## Engine unit tests (131)
+## Engine unit tests (137)
 
 | Area | What is asserted |
 |---|---|
@@ -23,6 +23,7 @@ Three suites, each answering a different question.
 | `test_library` | SQLite schema, job recovery, requeue, audit |
 | `test_profiles` | 23 built-ins validate, import/export round trip, clone immutability |
 | `test_personalisation` | influence caps, consent gate, reset |
+| `test_lightroom_native` | develop settings are documented keys clamped to Lightroom's ranges, every mask reports the `render` capability, native mode carries no mask plan |
 | `test_packaging` | UI and brand assets packaged and current, README sections and links, plug-in self-containment |
 | `test_demo` | the bundled sample library resolves on a fresh clone, user samples take precedence, empty installs explain where they looked |
 

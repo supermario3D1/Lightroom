@@ -269,7 +269,8 @@ function masksPanel(v) {
   return h("div", {},
     h("p", { class: "card-sub", style: "margin-bottom:8px" },
       "Click a mask to see exactly what the engine selected, drawn over the original. " +
-      "Confidence is shown so you know what to check before a batch run."),
+      "Confidence is shown so you know what to check before a batch run. These masks shape the rendered deliverable; " +
+      "Lightroom's documented SDK cannot create local adjustment masks from a plug-in, so rendered delivery keeps them."),
     ...masks.map((m) => h("button", {
         class: `mask-row ${ed && ed.overlay === m.kind ? "active" : ""}`,
         title: `Show the ${m.kind} mask over the photograph`,
@@ -411,7 +412,8 @@ function exportDialog(ed) {
 }
 
 function lightroomDialog(ed) {
-  const mode = h("select", {}, h("option", { value: "adaptive" }, "Adaptive — develop settings + masks"),
+  const mode = h("select", {},
+    h("option", { value: "adaptive" }, "Adaptive — develop settings + mask plan"),
     h("option", { value: "native" }, "Native — develop settings only"),
     h("option", { value: "render" }, "Rendered — graded copy for re-import"));
   openModal("Send to Lightroom", h("div", {},
@@ -432,17 +434,16 @@ function lightroomDialog(ed) {
        // not a bare array — count the entries either way so the dialog never says "undefined".
        const maskDoc = p.masks || {};
        const maskList = Array.isArray(maskDoc) ? maskDoc : (maskDoc.masks || []);
-       const nativeMasks = maskList.filter((m) => (m.capability || "plugin") === "native").length;
-       const gradientSuffix = maskList.length
-         ? ` (${nativeMasks} native gradient${nativeMasks === 1 ? "" : "s"}, ${maskList.length - nativeMasks} rendered)`
-         : "";
        openModal("Packet ready", h("div", {},
          h("p", { class: "card-sub" }, `Written to ${p.packet_path}`),
          h("dl", { class: "kv", style: "margin-top:10px" },
            h("dt", {}, "Mode"), h("dd", {}, p.mode || mode.value),
            h("dt", {}, "Develop settings"), h("dd", {}, String(Object.keys(p.settings || {}).length)),
-           h("dt", {}, "Local adjustments"), h("dd", {}, `${maskList.length}${gradientSuffix}`),
+           h("dt", {}, "Local adjustments"), h("dd", {}, String(maskList.length)),
            h("dt", {}, "Explanation items"), h("dd", {}, String((p.explanation || []).length))),
+         maskList.length ? h("p", { class: "note", style: "margin-top:10px" },
+           "This plan uses masks. They are baked into the rendered deliverable — Lightroom's documented SDK cannot create " +
+           "local adjustment masks from a plug-in. Choose rendered delivery to keep them, or native settings only to skip them.") : null,
          h("p", { class: "note", style: "margin-top:10px" },
            "In Lightroom: select the photo → Plug-in Extras → Kestrel → Apply latest edit.")),
        [h("button", { class: "btn btn-primary", onclick: closeModal }, "Done")]);

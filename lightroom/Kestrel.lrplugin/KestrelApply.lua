@@ -188,7 +188,7 @@ function Apply.maskSummary(packet)
     local list = masks.masks or {}
     local byCapability = {}
     for _, mask in ipairs(list) do
-        local capability = mask.capability or 'plugin'
+        local capability = mask.capability or 'render'
         byCapability[capability] = (byCapability[capability] or 0) + 1
     end
     return { count = #list, list = list, byCapability = byCapability }

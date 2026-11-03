@@ -629,9 +629,10 @@ function viewDocs() {
         h("li", {}, "Library → Plug-in Extras → Kestrel → Settings and confirm the engine address (default 127.0.0.1:8765)."),
         h("li", {}, "Select photographs, then Kestrel → Apply latest edit.")),
       h("p", { class: "note", style: "margin-top:10px" },
-        "Global develop settings are written natively and remain fully editable in Lightroom. Masks are native radial/linear " +
-        "gradients where possible; AI subject masks are delivered as graded 16-bit TIFF renders when Lightroom cannot express them. " +
-        "The capability table in Settings is generated from the running engine — no invented settings.")),
+        "Global develop settings are written natively and remain fully editable in Lightroom. Lightroom's documented SDK " +
+        "cannot create local adjustment masks from a plug-in — not a radial gradient and not an AI mask — so Kestrel's masks " +
+        "shape the rendered result: pick rendered delivery (16-bit TIFF) when a plan uses them. The capability table in " +
+        "Settings is read from the running engine — no invented settings.")),
     h("div", { class: "spacer-y" }),
     h("div", { class: "dash-col" },
       h("div", { class: "card" },

@@ -83,7 +83,7 @@ it.
 
 | Wanted | Reality | Kestrel's answer |
 |---|---|---|
-| AI subject mask as a native Lightroom mask | No documented API for programmatic AI masks | Deliver global settings natively; report each mask's capability; offer a rendered TIFF when the mask matters |
+| A local adjustment mask, AI or gradient | No documented API creates masks from a plug-in | Global settings are delivered natively; the mask plan is recorded in the packet and baked into the rendered TIFF. Every mask reports `render` capability — nothing claims to be a Lightroom mask |
 | Copy local masks between photos | No documented API | Sync-look copies global settings only and says so in the confirmation dialog |
 | Invoke Lightroom's AI Denoise | No API | Render denoise in the engine; deliver as a rendered file |
 | Read the render preview for an in-dialog comparison | No reliable preview API | Show the reasoning and metrics; the visual comparison happens in the Develop module or the workspace |

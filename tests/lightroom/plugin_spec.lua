@@ -329,6 +329,10 @@ test('json round-trips real payloads', function()
     }
     local decoded = Json.decode(Json.encode(payload))
     assertEqual(hex(decoded.name), hex(payload.name), 'utf-8 text, byte for byte')
+    -- Control characters must still be escaped, and must come back intact.
+    local control = 'a' .. string.char(9) .. 'b' .. string.char(1) .. 'c'
+    local controlRoundTrip = Json.decode(Json.encode({ text = control })).text
+    assertEqual(hex(controlRoundTrip), hex(control), 'control characters survive')
     assertEqual(decoded.values[4], -0.25, 'float preserved')
     assertEqual(decoded.nested.ok, true, 'boolean')
     assertEqual(Json.decode('{"a":null}').a, nil, 'null becomes nil')

@@ -8,15 +8,34 @@
 
 local Json = {}
 
-local escapeMap = {
-    ['"'] = '\\"', ['\\'] = '\\\\', ['/'] = '\\/',
-    ['\b'] = '\\b', ['\f'] = '\\f', ['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t',
+-- JSON requires escaping only the C0 controls, the quote and the backslash.
+-- This is done byte by byte on purpose: Lua's '%c' class is locale-dependent
+-- and on some builds (macOS included) matches the C1 range 0x80-0x9F. Those
+-- are UTF-8 continuation bytes, so a pattern-based escape splits multi-byte
+-- characters and corrupts every non-ASCII string it touches.
+local escapeBytes = {
+    [8] = '\\b', [9] = '\\t', [10] = '\\n', [12] = '\\f', [13] = '\\r',
+    [34] = '\\"', [92] = '\\\\',
 }
 
-local function escapeChar(char)
-    local mapped = escapeMap[char]
+local function escapeByte(byte)
+    local mapped = escapeBytes[byte]
     if mapped then return mapped end
-    return string.format('\\u%04x', string.byte(char))
+    return string.format('\\u%04x', byte)
+end
+
+local function encodeText(text)
+    text = tostring(text)
+    local out = {}
+    for index = 1, #text do
+        local byte = string.byte(text, index)
+        if byte < 32 or byte == 34 or byte == 92 then
+            out[#out + 1] = escapeByte(byte)
+        else
+            out[#out + 1] = string.sub(text, index, index)
+        end
+    end
+    return table.concat(out)
 end
 
 local function isArray(tbl)
@@ -55,7 +74,7 @@ local function encodeTable(tbl, out, depth)
         for index, key in ipairs(keys) do
             if index > 1 then out[#out + 1] = ',' end
             out[#out + 1] = '"'
-            out[#out + 1] = tostring(key):gsub('[%c"\\]', escapeChar)
+            out[#out + 1] = encodeText(key)
             out[#out + 1] = '":'
             encodeValue(tbl[key], out, depth + 1)
         end
@@ -79,7 +98,7 @@ encodeValue = function(value, out, depth)
         end
     elseif kind == 'string' then
         out[#out + 1] = '"'
-        out[#out + 1] = value:gsub('[%c"\\]', escapeChar)
+        out[#out + 1] = encodeText(value)
         out[#out + 1] = '"'
     elseif kind == 'table' then
         encodeTable(value, out, depth)
