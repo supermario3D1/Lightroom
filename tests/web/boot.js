@@ -38,6 +38,17 @@ async function api(path, options) {
   // Analysis is what the editor's left panel renders, so exercise the real
   // endpoint before the UI boots rather than asserting on an empty state.
   await api(`/api/images/${images[0].id}/analyse?quality=standard`, { method: "POST" });
+  // The editor's right-hand panels read the latest *edit*, not the analysis, so
+  // render one and keep it: otherwise the tabs legitimately show empty states
+  // and the test would assert on them.
+  const preview = await api(`/api/images/${images[0].id}/preview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quality: "standard", save_version: true }),
+  });
+  if (!preview.version || !preview.version.metrics) {
+    throw new Error("preview did not return a saved version: " + JSON.stringify(Object.keys(preview)));
+  }
 
   const html = await (await fetch(BASE + "/")).text();
   const dom = new JSDOM(html, {
@@ -104,13 +115,51 @@ async function api(path, options) {
     check(/Edit this photo|Re-render/.test(text()), "editor offers no edit action");
     check(Boolean(document.querySelector(".panel-tabs")), "editor tabs missing");
 
-    // the mask panel must be reachable and must explain itself
-    const localTab = [...document.querySelectorAll(".panel-tabs button")]
-      .find((button) => button.textContent === "Local");
+    // every analysis tab must render real content, not an empty shell
+    const tab = (label) => [...document.querySelectorAll(".panel-tabs button")]
+      .find((button) => button.textContent === label);
+
+    const localTab = tab("Local");
     if (localTab) {
       localTab.click();
       await sleep(500);
       check(!/Something went wrong/.test(text()), "mask panel failed to render");
+      check(/Click a mask|global adjustments only/.test(text()), "mask panel explains nothing");
+      check(document.querySelectorAll(".mask-row").length > 0, "mask panel lists no masks");
+      // Clicking a mask must actually fetch and show the overlay — the one
+      // feature that lets a photographer judge the segmentation.
+      const firstMask = document.querySelector(".mask-row");
+      if (firstMask) {
+        firstMask.click();
+        await sleep(1500);
+        check(Boolean(document.querySelector("img.canvas-overlay")),
+          "clicking a mask did not draw the overlay");
+        check(Boolean(document.querySelector(".overlay-bar")), "overlay has no controls");
+        check(!/Something went wrong/.test(text()), "mask overlay failed to render");
+      }
+    }
+
+    const qualityTab = tab("Quality");
+    if (qualityTab) {
+      qualityTab.click();
+      await sleep(500);
+      const metrics = document.querySelectorAll(".metric").length;
+      check(metrics >= 8, `quality panel rendered ${metrics} metric rows`);
+      check(/Naturalness/.test(text()), "quality panel is missing its metric labels");
+    }
+
+    const adjustTab = tab("Adjustments");
+    if (adjustTab) {
+      adjustTab.click();
+      await sleep(500);
+      check(/Exposure/.test(text()), "adjustment panel is missing the settings table");
+    }
+
+    const whyTab = tab("Why");
+    if (whyTab) {
+      whyTab.click();
+      await sleep(400);
+      check(/What the engine sees/.test(text()), "why panel lost its analysis section");
     }
   }
 

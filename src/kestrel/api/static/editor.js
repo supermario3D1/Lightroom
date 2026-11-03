@@ -288,7 +288,11 @@ function masksPanel(v) {
 }
 
 function qualityPanel(v) {
-  const m = (v && v.metrics) || {};
+  if (!v) {
+    return h("p", { class: "card-sub" },
+      "Run an edit to measure quality — every metric is read from the rendered result, not estimated.");
+  }
+  const m = v.metrics || {};
   const rows = [
     ["Overall score", m.score, 1, 0],
     ["Naturalness", m.naturalness, 1, 0],

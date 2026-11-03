@@ -62,9 +62,12 @@ whole class of bugs.
 
 ## Workspace boot test
 
-`tests/web/boot.js` loads the real `index.html` in jsdom, boots the app against a live engine, checks the boot
-screen is gone, the engine chip reads `ok`, then visits all seven views and asserts each rendered something and
-none reported an error. It also fails on any console error. It is a smoke test: it proves the wiring, not the
+`tests/web/boot.js` loads the real `index.html` in jsdom and boots it against a live engine. It imports the bundled
+sample, analyses it, renders a real edit version, then checks that the boot screen is gone, the engine chip reads
+`ok`, all six navigation destinations render, the library tiles route to the editor, and each editor tab renders
+real content: the explanation, the adjustment table, the mask list, at least eight quality metrics read from the
+render. Clicking a mask must fetch and draw the overlay, so the one feature that lets a photographer judge the
+segmentation is covered too. It fails on any console error. It is a smoke test: it proves the wiring, not the
 pixels.
 
 ## Evaluation harness

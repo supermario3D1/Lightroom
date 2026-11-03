@@ -42,6 +42,10 @@ Reliability work found by running the first CI pass on three operating systems.
 
 ### Added
 
+- The workspace boot test now renders a real edit and checks every editor tab: the explanation, the adjustment
+  table, the mask list and eight or more measured quality metrics, plus the mask overlay round trip (click a mask,
+  see it drawn over the photograph). The quality panel shows an explicit "run an edit" state instead of a table of
+  dashes when no version exists.
 - `tests/test_lightroom_native.py`: the delivery contract (documented keys, clamped ranges, render-only masks,
   mode differences) is now covered — 137 unit tests.
 
