@@ -1,0 +1,56 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: please run `kestrel doctor` and, if the problem is in Lightroom, **Plug-in Extras → Kestrel → Diagnostics**.
+        Do not attach photographs you do not have the right to share; a crop is enough.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. kestrel serve
+        2. Import 12 night football RAWs
+        3. Batch → High → Start
+        4. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kestrel version
+      description: Output of `kestrel --version`
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: kestrel doctor output
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Python and Lightroom version
+      placeholder: macOS 14.5 · Python 3.12.4 · Lightroom Classic 13.3
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines
+      description: Tail of `KESTREL_HOME/kestrel.log` (redact paths if needed).
+      render: text
+    validations:
+      required: false

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Kestrel">
+  <title>Kestrel</title>
+  <defs>
+    <linearGradient id="k-tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1423"/>
+      <stop offset="1" stop-color="#1c2a44"/>
+    </linearGradient>
+    <linearGradient id="k-gold" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#e08a1e"/>
+      <stop offset="1" stop-color="#ffc65c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#k-tile)"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" fill="none" stroke="#2c3c58" stroke-width="2"/>
+  <circle cx="256" cy="256" r="152" fill="none" stroke="url(#k-gold)" stroke-width="11"/>
+  <g stroke="#ffc65c" stroke-width="10" stroke-linecap="round">
+    <line x1="324.0" y1="138.2" x2="331.0" y2="126.1"/><line x1="392.0" y1="256.0" x2="406.0" y2="256.0"/><line x1="324.0" y1="373.8" x2="331.0" y2="385.9"/><line x1="188.0" y1="373.8" x2="181.0" y2="385.9"/><line x1="120.0" y1="256.0" x2="106.0" y2="256.0"/><line x1="188.0" y1="138.2" x2="181.0" y2="126.1"/>
+  </g>
+  <polygon points="217,175 251,175 251,237 315,175 359,175 282,254 365,337 321,337 251,269 251,337 217,337" fill="#f8fafc"/>
+</svg>

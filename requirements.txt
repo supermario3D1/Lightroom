@@ -1,0 +1,18 @@
+# Runtime dependencies, mirrored from pyproject.toml for people who cannot use
+# `pip install -e .` (for example inside a locked-down environment).
+numpy>=1.26,<3
+scipy>=1.11
+opencv-contrib-python-headless>=4.9,<5
+scikit-image>=0.22
+Pillow>=10.2
+rawpy>=0.19
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+python-multipart>=0.0.9
+psutil>=5.9
+
+# Optional
+# onnxruntime>=1.17
+# pytest>=8.0
+# lupa>=2.0          # only for the plug-in test harness

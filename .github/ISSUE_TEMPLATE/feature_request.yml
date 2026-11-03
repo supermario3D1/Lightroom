@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a capability or a change in behaviour
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: Describe the workflow that is painful today, not the feature you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Analysis (genre, scene, faces, subject)
+        - Decision (look, targets, profiles)
+        - Rendering (masks, detail, noise)
+        - Lightroom plug-in
+        - Workspace UI
+        - Batch / queue
+        - Performance
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have tried
+      description: Including how you do it today in Lightroom or another tool.
+    validations:
+      required: false

@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kestrel-imaging"
+version = "1.0.0"
+description = "Kestrel — professional AI photo editing engine for Adobe Lightroom Classic"
+
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics :: Editors",
+]
+authors = [{ name = "Kestrel Imaging", email = "hello@kestrelimaging.example" }]
+keywords = ["lightroom", "photo-editing", "computer-vision", "raw", "photography"]
+urls = { Homepage = "https://github.com/supermario3D1/Lightroom", Documentation = "https://github.com/supermario3D1/Lightroom/blob/main/docs/PRD.md", Issues = "https://github.com/supermario3D1/Lightroom/issues", Changelog = "https://github.com/supermario3D1/Lightroom/blob/main/CHANGELOG.md" }
+dependencies = [
+  "numpy>=1.26,<3", "scipy>=1.11", "opencv-contrib-python-headless>=4.9,<5",
+  "scikit-image>=0.22", "Pillow>=10.2", "rawpy>=0.19", "fastapi>=0.110",
+  "uvicorn[standard]>=0.29", "pydantic>=2.6", "python-multipart>=0.0.9", "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+onnx = ["onnxruntime>=1.17"]
+raw = ["rawpy>=0.19"]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+all = ["kestrel-imaging[onnx,raw,dev]"]
+
+[project.scripts]
+kestrel = "kestrel.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["kestrel*"]
+
+[tool.setuptools.package-data]
+kestrel = [
+  "api/static/*.html",
+  "api/static/*.css",
+  "api/static/*.js",
+  "api/static/*.svg",
+  "api/static/*.png",
+  "api/static/*.txt",
+  "api/static/brand/*.png",
+  "api/static/brand/*.svg",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

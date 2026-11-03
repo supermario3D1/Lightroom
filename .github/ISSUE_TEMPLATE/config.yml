@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/supermario3D1/Lightroom/security/advisories/new
+    about: Please report vulnerabilities privately, not in a public issue.
+  - name: Setup and usage questions
+    url: https://github.com/supermario3D1/Lightroom/blob/main/README.md#troubleshooting
+    about: The README troubleshooting section covers the common installation problems.
