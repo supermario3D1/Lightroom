@@ -1,0 +1,138 @@
+KESTREL — END USER LICENCE AGREEMENT
+====================================
+
+Version 1.0 · effective 2026-11-02
+Copyright © 2026 Kestrel Imaging. All rights reserved.
+
+This agreement governs the Kestrel application, its Lightroom plug-in, the
+bundled web workspace and the source code in this repository (together, "the
+Software").
+
+
+1. WHAT YOU MAY DO WITHOUT A LICENCE
+------------------------------------
+
+You may, free of charge and without asking permission:
+
+  a) read, compile and run the Software for evaluation, learning, research and
+     personal non-commercial use;
+  b) modify the Software for those purposes, and keep your modifications
+     private;
+  c) use the Software on photographs you own or are authorised to edit, for
+     evaluation output only — see clause 3 for commercial delivery;
+  d) copy the Software for backup and archival purposes.
+
+
+2. WHAT REQUIRES A COMMERCIAL LICENCE
+-------------------------------------
+
+A paid licence is required to:
+
+  a) use the Software to produce images that are delivered to a client, sold,
+     published commercially or used to promote a business;
+  b) use the Software in a studio, agency, media organisation, club or any other
+     commercial setting, including internal commercial workflows;
+  c) redistribute the Software, in whole or in part, with or without
+     modification;
+  d) offer the Software, or a service substantially based on it, to third
+     parties — hosted, embedded or otherwise.
+
+Licences are perpetual per seat, with an optional annual support and update
+plan. Seat counts, tiers and expiry are encoded in the signed key issued at
+purchase and are verified offline by the application.
+
+
+3. PHOTOGRAPHS AND DATA
+-----------------------
+
+  a) You retain all rights in your photographs. This agreement grants Kestrel
+     Imaging no rights in your images.
+  b) The Software processes images locally on your machine. It does not upload
+     them, and it contains no telemetry.
+  c) The Software does not train any model on your photographs. The optional
+     personalisation feature stores bounded numeric preferences derived from
+     your own feedback, on your own machine, and only with your explicit
+     consent.
+  d) You are responsible for holding the rights necessary to edit the images
+     you process.
+
+
+4. RESTRICTIONS
+---------------
+
+You may not:
+
+  a) remove, obscure or alter copyright, licence or attribution notices;
+  b) use the Kestrel name, logo or brand assets in a way that suggests
+     endorsement of a derivative product, or in a way that confuses origin;
+  c) sublicense, rent, lease or lend the Software;
+  d) use the Software to build a competing product offered to third parties;
+  e) reverse engineer the licence-key verification mechanism in order to
+     circumvent licensing (you may inspect the source for security research).
+
+
+5. THIRD-PARTY COMPONENTS
+-------------------------
+
+The Software depends on open-source components, each under its own licence:
+NumPy (BSD-3-Clause), SciPy (BSD-3-Clause), OpenCV (Apache-2.0),
+scikit-image (BSD-3-Clause), Pillow (MIT-CMU), rawpy/LibRaw (MIT / LGPL-2.1
+dual), FastAPI (MIT), Uvicorn (BSD-3-Clause), Pydantic (MIT), psutil
+(BSD-3-Clause). Their terms apply to those components and prevail over this
+agreement to the extent of any conflict. Optional ONNX Runtime (MIT) is
+installed separately by the user.
+
+The Lightroom plug-in is written against Adobe's public Lightroom SDK. Adobe,
+Lightroom and Photoshop are trademarks of Adobe Inc. This product is
+independent and is not affiliated with, sponsored or endorsed by Adobe.
+
+
+6. NO WARRANTY
+--------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN PARTICULAR, NO
+WARRANTY IS GIVEN THAT THE SOFTWARE WILL PRODUCE A PARTICULAR AESTHETIC
+RESULT, THAT GENRE DETECTION WILL BE CORRECT ON EVERY FRAME, OR THAT THE
+SOFTWARE IS FREE OF DEFECTS.
+
+The Software never modifies original image files, and every edit is
+non-destructive with a stored snapshot, but you are responsible for your own
+backups.
+
+
+7. LIMITATION OF LIABILITY
+--------------------------
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL KESTREL IMAGING BE
+LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL
+DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF DATA OR BUSINESS INTERRUPTION,
+ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE. THE TOTAL
+LIABILITY OF KESTREL IMAGING UNDER THIS AGREEMENT SHALL NOT EXCEED THE AMOUNT
+PAID FOR THE LICENCE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+
+
+8. TERMINATION
+--------------
+
+This licence terminates automatically if you breach any term. On termination
+you must stop using the Software and destroy copies. Clauses 3, 4, 6, 7 and 9
+survive termination. Your photographs, and any edits already applied in
+Lightroom, remain yours and remain usable.
+
+
+9. GOVERNING LAW
+----------------
+
+This agreement is governed by the laws of the State of Victoria, Australia,
+without regard to conflict-of-law rules. Nothing in this agreement limits
+rights you have under mandatory consumer law in your jurisdiction.
+
+
+10. CONTACT
+-----------
+
+Licensing: hello@kestrelimaging.example
+Support:   support@kestrelimaging.example
+Security:  security@kestrelimaging.example

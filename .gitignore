@@ -1,0 +1,32 @@
+# Runtime data and user content (never commit photographs or the working library)
+data/
+!data/.gitkeep
+models/*.onnx
+models/*.tflite
+models/*.pb
+models/*.onnx.data
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
+*.log
+*.lrdata/
+# Local secrets and licence keys
+.env
+secrets/
+*.pem
+*.key
+
+# JavaScript test tooling (jsdom is installed on demand by CI and the boot test)
+node_modules/
+package-lock.json
